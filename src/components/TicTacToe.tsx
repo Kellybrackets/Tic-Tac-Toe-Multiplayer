@@ -1,13 +1,12 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, RotateCcw, Copy, Check } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import GameBoard from '@/components/GameBoard';
 import { GameState } from '@/pages/Index';
 import { checkWinner } from '@/utils/gameUtils';
-import { useToast } from '@/hooks/use-toast';
 
 interface TicTacToeProps {
   gameState: GameState;
@@ -17,47 +16,18 @@ interface TicTacToeProps {
   onLeaveGame: () => void;
 }
 
-const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame }: TicTacToeProps) => {
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-  
-  const playerSymbol = gameState.players.X.id === playerId ? 'X' : 'O';
-  const isMyTurn = gameState.currentPlayer === playerSymbol;
-  const opponentName = playerSymbol === 'X' ? gameState.players.O?.name : gameState.players.X.name;
-
-  // For single player mode, allow playing both sides
-  const isSinglePlayer = gameState.id === 'SINGLE';
-
-  const copyGameCode = async () => {
-    try {
-      await navigator.clipboard.writeText(gameState.id);
-      setCopied(true);
-      toast({
-        title: "Game code copied!",
-        description: "Share this code with your friend to join the game.",
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.log('Failed to copy game code');
-    }
-  };
+const TicTacToe = ({ gameState, setGameState, onLeaveGame }: TicTacToeProps) => {
+  const isLocalGame = gameState.id === 'LOCAL';
+  const currentPlayerName = gameState.currentPlayer === 'X' ? gameState.players.X.name : gameState.players.O?.name;
 
   const makeMove = (index: number) => {
     console.log('Making move at index:', index);
     console.log('Current game state:', gameState);
-    console.log('Is my turn:', isMyTurn);
-    console.log('Is single player:', isSinglePlayer);
     console.log('Cell value:', gameState.board[index]);
     
     // Check if the move is valid
-    if (gameState.board[index] || gameState.winner) {
+    if (gameState.board[index] || gameState.winner || gameState.status !== 'playing') {
       console.log('Invalid move: cell occupied or game finished');
-      return;
-    }
-
-    // In single player mode, allow any move. In multiplayer, check if it's the player's turn
-    if (!isSinglePlayer && !isMyTurn) {
-      console.log('Not your turn');
       return;
     }
 
@@ -85,14 +55,11 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
       board: Array(9).fill(null),
       currentPlayer: 'X',
       winner: null,
-      status: gameState.players.O ? 'playing' : 'waiting'
+      status: 'playing'
     });
   };
 
   const getGameStatus = () => {
-    if (gameState.status === 'waiting') {
-      return `Waiting for opponent... Share code: ${gameState.id}`;
-    }
     if (gameState.winner === 'draw') {
       return "It's a draw!";
     }
@@ -100,23 +67,13 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
       const winnerName = gameState.winner === 'X' ? gameState.players.X.name : gameState.players.O?.name;
       return `${winnerName} wins!`;
     }
-    if (isSinglePlayer) {
-      return `Current player: ${gameState.currentPlayer}`;
-    }
-    if (isMyTurn) {
-      return "Your turn";
-    }
-    return `${opponentName}'s turn`;
+    return `${currentPlayerName}'s turn`;
   };
 
   const getStatusColor = () => {
-    if (gameState.status === 'waiting') return 'bg-yellow-500';
     if (gameState.winner === 'draw') return 'bg-gray-500';
-    if (gameState.winner) {
-      if (isSinglePlayer) return 'bg-green-500';
-      return gameState.winner === playerSymbol ? 'bg-green-500' : 'bg-red-500';
-    }
-    return isMyTurn || isSinglePlayer ? 'bg-blue-500' : 'bg-purple-500';
+    if (gameState.winner) return 'bg-green-500';
+    return gameState.currentPlayer === 'X' ? 'bg-blue-500' : 'bg-red-500';
   };
 
   return (
@@ -130,21 +87,9 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
               className="text-white hover:bg-white/20"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Leave Game
+              New Game
             </Button>
-            {gameState.id !== 'SINGLE' && (
-              <div className="flex items-center gap-2">
-                <span className="text-white font-mono">#{gameState.id}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={copyGameCode}
-                  className="text-white hover:bg-white/20"
-                >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-            )}
+            <div className="text-white font-semibold">Local Game</div>
           </div>
           
           <div className="text-center">
@@ -161,16 +106,18 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
               <div className="text-center">
                 <div className="text-2xl font-bold text-white mb-1">X</div>
                 <div className="text-purple-100">{gameState.players.X.name}</div>
-                {playerSymbol === 'X' && !isSinglePlayer && <Badge className="mt-1 bg-blue-500">You</Badge>}
+                {gameState.currentPlayer === 'X' && gameState.status === 'playing' && (
+                  <Badge className="mt-1 bg-blue-500">Current Turn</Badge>
+                )}
               </div>
             </div>
             <div className={`p-4 rounded-lg ${gameState.currentPlayer === 'O' ? 'bg-red-500/20 border-2 border-red-400' : 'bg-white/10'}`}>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white mb-1">O</div>
-                <div className="text-purple-100">
-                  {gameState.players.O?.name || 'Waiting...'}
-                </div>
-                {playerSymbol === 'O' && !isSinglePlayer && <Badge className="mt-1 bg-red-500">You</Badge>}
+                <div className="text-purple-100">{gameState.players.O?.name}</div>
+                {gameState.currentPlayer === 'O' && gameState.status === 'playing' && (
+                  <Badge className="mt-1 bg-red-500">Current Turn</Badge>
+                )}
               </div>
             </div>
           </div>
@@ -179,7 +126,7 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
           <GameBoard 
             board={gameState.board}
             onCellClick={makeMove}
-            disabled={(!isMyTurn && !isSinglePlayer) || gameState.status !== 'playing'}
+            disabled={gameState.status !== 'playing'}
             winner={gameState.winner}
           />
 
