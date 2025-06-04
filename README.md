@@ -1,18 +1,36 @@
-# Welcome to your Lovable project
+# 🎮 Tic-Tac-Toe Multiplayer
 
-## Project info
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18.2+-61DAFB.svg?logo=react)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-16.+-339933.svg?logo=node.js)](https://nodejs.org/)
 
-**URL**: https://lovable.dev/projects/6094317b-5ebc-460b-9c38-d140f8ef93db
+A real-time multiplayer Tic-Tac-Toe game with WebSocket connectivity, built with React and Node.js.
 
-## How can I edit this code?
+![Game Screenshot](./screenshot.png) <!-- Add actual screenshot later -->
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- **Real-time multiplayer gameplay** using WebSockets
+- **Room-based system**: Create or join game rooms
+- **Responsive UI**: Works on desktop and mobile
+- **Player authentication**: Google/Facebook login + guest access
+- **Game state tracking**: Win/loss/draw statistics
+- **Game history**: View past matches
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6094317b-5ebc-460b-9c38-d140f8ef93db) and start prompting.
+## 🚀 Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
+- Node.js v16+
+- npm v8+
+- WebSocket server (included)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/tic-tac-toe-multiplayer.git
+   cd tic-tac-toe-multiplayer
+   ```
 
 **Use your preferred IDE**
 
@@ -20,21 +38,6 @@ If you want to work locally using your own IDE, you can clone this repo and push
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
 
 **Edit a file directly in GitHub**
 
@@ -50,24 +53,55 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+📂 Project Structure
+```
+tic-tac-toe/
+├── client/                 # React frontend
+│   ├── public/             # Static assets
+│   ├── src/
+│   │   ├── components/     # UI components
+│   │   ├── contexts/      # React contexts
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── pages/         # Route components
+│   │   ├── services/      # API services
+│   │   └── styles/        # CSS modules
+│   └── package.json
+│
+├── server/                 # Node.js backend
+│   ├── controllers/       # Route handlers
+│   ├── models/            # Data models
+│   ├── services/          # Business logic
+│   ├── utils/             # Utilities
+│   └── package.json
+│
+├── .gitignore
+└── README.md
+```
 
-This project is built with:
+🛠️ Technologies Used
+Frontend
+React 18 (TypeScript)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Tailwind CSS
 
-## How can I deploy this project?
+React Router
 
-Simply open [Lovable](https://lovable.dev/projects/6094317b-5ebc-460b-9c38-d140f8ef93db) and click on Share -> Publish.
+Socket.IO Client
 
-## Can I connect a custom domain to my Lovable project?
+Backend
+Node.js + Express
 
-Yes, you can!
+Socket.IO
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+JSON Web Tokens (JWT)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+🤝 Contributing
+Fork the project
+
+Create your feature branch (git checkout -b feature/AmazingFeature)
+
+Commit your changes (git commit -m 'Add some amazing feature')
+
+Push to the branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
