@@ -25,6 +25,9 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
   const isMyTurn = gameState.currentPlayer === playerSymbol;
   const opponentName = playerSymbol === 'X' ? gameState.players.O?.name : gameState.players.X.name;
 
+  // For single player mode, allow playing both sides
+  const isSinglePlayer = gameState.id === 'SINGLE';
+
   const copyGameCode = async () => {
     try {
       await navigator.clipboard.writeText(gameState.id);
@@ -40,7 +43,23 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
   };
 
   const makeMove = (index: number) => {
-    if (gameState.board[index] || gameState.winner || !isMyTurn) return;
+    console.log('Making move at index:', index);
+    console.log('Current game state:', gameState);
+    console.log('Is my turn:', isMyTurn);
+    console.log('Is single player:', isSinglePlayer);
+    console.log('Cell value:', gameState.board[index]);
+    
+    // Check if the move is valid
+    if (gameState.board[index] || gameState.winner) {
+      console.log('Invalid move: cell occupied or game finished');
+      return;
+    }
+
+    // In single player mode, allow any move. In multiplayer, check if it's the player's turn
+    if (!isSinglePlayer && !isMyTurn) {
+      console.log('Not your turn');
+      return;
+    }
 
     const newBoard = [...gameState.board];
     newBoard[index] = gameState.currentPlayer;
@@ -48,13 +67,16 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
     const winner = checkWinner(newBoard);
     const isDraw = !winner && newBoard.every(cell => cell !== null);
     
-    setGameState({
+    const newGameState = {
       ...gameState,
       board: newBoard,
       currentPlayer: gameState.currentPlayer === 'X' ? 'O' : 'X',
       winner: winner || (isDraw ? 'draw' : null),
       status: winner || isDraw ? 'finished' : 'playing'
-    });
+    } as GameState;
+
+    console.log('New game state:', newGameState);
+    setGameState(newGameState);
   };
 
   const resetGame = () => {
@@ -78,6 +100,9 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
       const winnerName = gameState.winner === 'X' ? gameState.players.X.name : gameState.players.O?.name;
       return `${winnerName} wins!`;
     }
+    if (isSinglePlayer) {
+      return `Current player: ${gameState.currentPlayer}`;
+    }
     if (isMyTurn) {
       return "Your turn";
     }
@@ -88,9 +113,10 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
     if (gameState.status === 'waiting') return 'bg-yellow-500';
     if (gameState.winner === 'draw') return 'bg-gray-500';
     if (gameState.winner) {
+      if (isSinglePlayer) return 'bg-green-500';
       return gameState.winner === playerSymbol ? 'bg-green-500' : 'bg-red-500';
     }
-    return isMyTurn ? 'bg-blue-500' : 'bg-purple-500';
+    return isMyTurn || isSinglePlayer ? 'bg-blue-500' : 'bg-purple-500';
   };
 
   return (
@@ -106,17 +132,19 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
               <ArrowLeft className="w-4 h-4 mr-2" />
               Leave Game
             </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-white font-mono">#{gameState.id}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={copyGameCode}
-                className="text-white hover:bg-white/20"
-              >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
+            {gameState.id !== 'SINGLE' && (
+              <div className="flex items-center gap-2">
+                <span className="text-white font-mono">#{gameState.id}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={copyGameCode}
+                  className="text-white hover:bg-white/20"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+            )}
           </div>
           
           <div className="text-center">
@@ -129,20 +157,20 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
         <CardContent className="space-y-6">
           {/* Players Info */}
           <div className="grid grid-cols-2 gap-4">
-            <div className={`p-4 rounded-lg ${playerSymbol === 'X' ? 'bg-blue-500/20 border-2 border-blue-400' : 'bg-white/10'}`}>
+            <div className={`p-4 rounded-lg ${gameState.currentPlayer === 'X' ? 'bg-blue-500/20 border-2 border-blue-400' : 'bg-white/10'}`}>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white mb-1">X</div>
                 <div className="text-purple-100">{gameState.players.X.name}</div>
-                {playerSymbol === 'X' && <Badge className="mt-1 bg-blue-500">You</Badge>}
+                {playerSymbol === 'X' && !isSinglePlayer && <Badge className="mt-1 bg-blue-500">You</Badge>}
               </div>
             </div>
-            <div className={`p-4 rounded-lg ${playerSymbol === 'O' ? 'bg-red-500/20 border-2 border-red-400' : 'bg-white/10'}`}>
+            <div className={`p-4 rounded-lg ${gameState.currentPlayer === 'O' ? 'bg-red-500/20 border-2 border-red-400' : 'bg-white/10'}`}>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white mb-1">O</div>
                 <div className="text-purple-100">
                   {gameState.players.O?.name || 'Waiting...'}
                 </div>
-                {playerSymbol === 'O' && <Badge className="mt-1 bg-red-500">You</Badge>}
+                {playerSymbol === 'O' && !isSinglePlayer && <Badge className="mt-1 bg-red-500">You</Badge>}
               </div>
             </div>
           </div>
@@ -151,7 +179,7 @@ const TicTacToe = ({ gameState, setGameState, playerName, playerId, onLeaveGame 
           <GameBoard 
             board={gameState.board}
             onCellClick={makeMove}
-            disabled={!isMyTurn || gameState.status !== 'playing'}
+            disabled={(!isMyTurn && !isSinglePlayer) || gameState.status !== 'playing'}
             winner={gameState.winner}
           />
 
