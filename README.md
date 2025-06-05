@@ -6,7 +6,7 @@
 
 A real-time multiplayer Tic-Tac-Toe game with WebSocket connectivity, built with React and Node.js.
 
-![Game Screenshot](./screenshot.png) <!-- Add actual screenshot later -->
+![Game Screenshot](tictac.gif) <!-- Add actual screenshot later -->
 
 ## ✨ Features
 
